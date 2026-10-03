@@ -16,6 +16,8 @@ export interface VenueSearchDrawerProps {
   onNoiseLevelChange?: (level: string) => void;
   priceRange?: string;
   onPriceRangeChange?: (price: string) => void;
+  maxDistance?: string;
+  onMaxDistanceChange?: (distance: string) => void;
   category?: string;
   onCategoryChange?: (category: string) => void;
   onClearFilters?: () => void;
@@ -51,6 +53,14 @@ export const PRICE_RANGES = [
   { id: "$$$", label: "$$$" },
 ];
 
+export const DISTANCE_OPTIONS = [
+  { id: "all", label: "Any Distance" },
+  { id: "0.5", label: "500m" },
+  { id: "1", label: "1km" },
+  { id: "3", label: "3km" },
+  { id: "5", label: "5km" },
+];
+
 /** Table/desk size filter — matches the tableSize field on Venue */
 export const TABLE_SIZES = [
   { id: "all", label: "Any Table Size" },
@@ -79,6 +89,8 @@ export function VenueSearchDrawer({
   onNoiseLevelChange,
   priceRange: externalPriceRange,
   onPriceRangeChange,
+  maxDistance: externalMaxDistance,
+  onMaxDistanceChange,
   category: externalCategory,
   onCategoryChange,
   onClearFilters,
@@ -89,6 +101,7 @@ export function VenueSearchDrawer({
   const [internalAmenities, setInternalAmenities] = useState<string[]>([]);
   const [internalNoise, setInternalNoise] = useState("all");
   const [internalPrice, setInternalPrice] = useState("all");
+  const [internalMaxDistance, setInternalMaxDistance] = useState("all");
   const [internalCategory, setInternalCategory] = useState("all");
   const { formatShortcut, getAriaKeyshortcuts } = usePlatformModifier();
 
@@ -96,6 +109,7 @@ export function VenueSearchDrawer({
   const amenities = externalAmenities ?? internalAmenities;
   const noise = externalNoiseLevel ?? internalNoise;
   const price = externalPriceRange ?? internalPrice;
+  const maxDistance = externalMaxDistance ?? internalMaxDistance;
   const cat = externalCategory ?? internalCategory;
 
   const hasActiveFilters =
@@ -103,6 +117,7 @@ export function VenueSearchDrawer({
     amenities.length > 0 ||
     noise !== "all" ||
     price !== "all" ||
+    maxDistance !== "all" ||
     cat !== "all";
 
   const activeFilterCount =
@@ -110,6 +125,7 @@ export function VenueSearchDrawer({
     amenities.length +
     (noise !== "all" ? 1 : 0) +
     (price !== "all" ? 1 : 0) +
+    (maxDistance !== "all" ? 1 : 0) +
     (cat !== "all" ? 1 : 0);
 
   const handleSearchInput = (val: string) => {
@@ -135,6 +151,11 @@ export function VenueSearchDrawer({
     else setInternalPrice(val);
   };
 
+  const handleMaxDistanceChange = (val: string) => {
+    if (onMaxDistanceChange) onMaxDistanceChange(val);
+    else setInternalMaxDistance(val);
+  };
+
   const handleCategoryChange = (val: string) => {
     if (onCategoryChange) onCategoryChange(val);
     else setInternalCategory(val);
@@ -153,6 +174,9 @@ export function VenueSearchDrawer({
 
     if (onPriceRangeChange) onPriceRangeChange("all");
     setInternalPrice("all");
+
+    if (onMaxDistanceChange) onMaxDistanceChange("all");
+    setInternalMaxDistance("all");
 
     if (onCategoryChange) onCategoryChange("all");
     setInternalCategory("all");
@@ -299,6 +323,20 @@ export function VenueSearchDrawer({
                 </button>
               </span>
             )}
+            {maxDistance !== "all" && (
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 animate-in zoom-in-95 duration-150">
+                Within: {DISTANCE_OPTIONS.find((d) => d.id === maxDistance)?.label ?? maxDistance}
+                <button
+                  type="button"
+                  data-testid="clear-distance-chip"
+                  onClick={() => handleMaxDistanceChange("all")}
+                  className="hover:text-rose-500 transition-colors"
+                  aria-label="Remove distance filter"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </span>
+            )}
             <button
               type="button"
               data-testid="clear-all-filters-btn"
@@ -427,6 +465,30 @@ export function VenueSearchDrawer({
                 onClick={() => handlePriceChange(item.id)}
                 className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
                   price === item.id
+                    ? "bg-blue-600 text-white shadow-md shadow-blue-500/20"
+                    : "bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700"
+                }`}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Distance Range */}
+        <div className="space-y-1.5">
+          <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+            Within Distance
+          </label>
+          <div className="flex flex-wrap gap-2">
+            {DISTANCE_OPTIONS.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                data-testid={`distance-${item.id}`}
+                onClick={() => handleMaxDistanceChange(item.id)}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                  maxDistance === item.id
                     ? "bg-blue-600 text-white shadow-md shadow-blue-500/20"
                     : "bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700"
                 }`}
