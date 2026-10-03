@@ -412,7 +412,16 @@ export function VenueSearchDrawer({
                   id={`amenity-${item.id}`}
                   data-testid={`amenity-${item.id}`}
                   aria-pressed={isActive}
-                  aria-label={item.label}
+                  role="checkbox"
+                  aria-checked={isActive}
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      handleToggleAmenity(item.id);
+                    }
+                  }}
+                  aria-label={`Filter by ${item.label}`}
                   onClick={() => handleToggleAmenity(item.id)}
                   className={`px-3.5 py-1.5 rounded-full text-xs font-bold border transition-all duration-200 ease-out origin-center ${
                     isActive
